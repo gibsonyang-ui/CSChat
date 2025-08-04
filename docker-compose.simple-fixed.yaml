@@ -1,0 +1,89 @@
+services:
+  postgres:
+    image: postgres:13
+    restart: always
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=chatwoot
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=
+      - POSTGRES_HOST_AUTH_METHOD=trust
+
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+  mailhog:
+    image: mailhog/mailhog
+    restart: always
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+
+  rails:
+    image: chatwoot/chatwoot:latest
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+      - mailhog
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - RAILS_ENV=production
+      - INSTALLATION_ENV=docker
+      - SECRET_KEY_BASE=0D5BFDBCF455A014C7FDB1EF4AC48E0EEED7D47BC95E1491B26D37AE26597A04983A96AD9792CCB40C7BBD5E16468F2B7ADE12160D3D489F04E5310B76CE7384
+      - FRONTEND_URL=http://localhost:3000
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=
+      - POSTGRES_DATABASE=chatwoot
+      - REDIS_URL=redis://redis:6379
+      - ENABLE_ACCOUNT_SIGNUP=true
+      - MAILER_SENDER_EMAIL=Chatwoot <noreply@localhost>
+      - SMTP_DOMAIN=localhost
+      - SMTP_ADDRESS=mailhog
+      - SMTP_PORT=1025
+      - SMTP_USERNAME=
+      - SMTP_PASSWORD=
+      - SMTP_AUTHENTICATION=
+      - SMTP_ENABLE_STARTTLS_AUTO=false
+      - SMTP_OPENSSL_VERIFY_MODE=none
+      - RAILS_LOG_LEVEL=info
+    entrypoint: docker/entrypoints/rails.sh
+    command: ['bundle', 'exec', 'rails', 's', '-p', '3000', '-b', '0.0.0.0']
+    volumes:
+      - storage_data:/app/storage
+
+  sidekiq:
+    image: chatwoot/chatwoot:latest
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - NODE_ENV=production
+      - RAILS_ENV=production
+      - INSTALLATION_ENV=docker
+      - SECRET_KEY_BASE=0D5BFDBCF455A014C7FDB1EF4AC48E0EEED7D47BC95E1491B26D37AE26597A04983A96AD9792CCB40C7BBD5E16468F2B7ADE12160D3D489F04E5310B76CE7384
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=
+      - POSTGRES_DATABASE=chatwoot
+      - REDIS_URL=redis://redis:6379
+    command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
+    volumes:
+      - storage_data:/app/storage
+
+volumes:
+  postgres_data:
+  redis_data:
+  storage_data:
