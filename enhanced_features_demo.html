@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatwoot 增强用户管理功能演示</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #1f93ff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .demo-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #1f93ff;
+        }
+        .button {
+            background: #1f93ff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .button:hover {
+            background: #1e40af;
+            transform: translateY(-1px);
+        }
+        .button.success {
+            background: #10b981;
+        }
+        .button.warning {
+            background: #f59e0b;
+        }
+        .button.danger {
+            background: #ef4444;
+        }
+        .status {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin: 5px;
+            display: inline-block;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .checkbox-group input {
+            width: auto;
+            margin-right: 8px;
+        }
+        #output {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Chatwoot 增强用户管理功能演示</h1>
+        
+        <div class="demo-section">
+            <h3>📊 功能状态检查</h3>
+            <button class="button" onclick="checkFeatureStatus()">检查增强功能状态</button>
+            <button class="button success" onclick="loadEnhancedAPI()">加载增强API</button>
+            <button class="button warning" onclick="loadUIEnhancer()">加载UI增强器</button>
+            <div id="status-display" style="margin-top: 10px;"></div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>👥 用户管理演示</h3>
+            
+            <h4>创建新用户</h4>
+            <div class="form-group">
+                <label>姓名</label>
+                <input type="text" id="demo-name" placeholder="输入用户姓名" value="Demo User">
+            </div>
+            <div class="form-group">
+                <label>邮箱</label>
+                <input type="email" id="demo-email" placeholder="输入邮箱地址" value="demo@example.com">
+            </div>
+            <div class="form-group">
+                <label>角色</label>
+                <select id="demo-role">
+                    <option value="agent">代理</option>
+                    <option value="administrator">管理员</option>
+                </select>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="demo-auto-password" checked>
+                <label for="demo-auto-password">自动生成密码</label>
+            </div>
+            
+            <div id="demo-manual-password" style="display: none;">
+                <div class="form-group">
+                    <label>自定义密码</label>
+                    <input type="password" id="demo-password" placeholder="输入密码（最少8位）">
+                </div>
+                <div class="form-group">
+                    <label>确认密码</label>
+                    <input type="password" id="demo-confirm-password" placeholder="确认密码">
+                </div>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="demo-confirmed">
+                <label for="demo-confirmed">立即认证账号</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="demo-welcome-email">
+                <label for="demo-welcome-email">发送欢迎邮件</label>
+            </div>
+            
+            <button class="button success" onclick="createDemoUser()">创建用户</button>
+            
+            <h4 style="margin-top: 30px;">用户管理操作</h4>
+            <div class="form-group">
+                <label>用户ID</label>
+                <input type="number" id="demo-user-id" placeholder="输入用户ID" value="1">
+            </div>
+            
+            <button class="button" onclick="getUserInfo()">获取用户信息</button>
+            <button class="button warning" onclick="toggleUserConfirmation()">切换认证状态</button>
+            <button class="button danger" onclick="resetUserPassword()">重置密码</button>
+        </div>
+        
+        <div class="demo-section">
+            <h3>🔧 直接集成到Chatwoot</h3>
+            <p>以下按钮将直接在当前Chatwoot页面中加载增强功能：</p>
+            
+            <button class="button" onclick="injectToCurrentPage()">注入到当前页面</button>
+            <button class="button success" onclick="openChatwootWithEnhancements()">打开增强版Chatwoot</button>
+            
+            <div style="margin-top: 15px;">
+                <h4>使用说明：</h4>
+                <ol style="color: #6b7280; font-size: 14px;">
+                    <li>点击"注入到当前页面"将增强功能添加到当前Chatwoot界面</li>
+                    <li>点击"打开增强版Chatwoot"在新窗口中打开带有增强功能的Chatwoot</li>
+                    <li>在Chatwoot中进入"设置" → "代理管理"查看增强选项</li>
+                    <li>添加或编辑代理时可以看到密码设置和认证控制功能</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>📝 输出日志</h3>
+            <div id="output">等待操作...</div>
+            <button class="button" onclick="clearOutput()">清除日志</button>
+        </div>
+    </div>
+
+    <script>
+        // 输出日志函数
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            output.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput() {
+            document.getElementById('output').textContent = '';
+        }
+
+        // 检查功能状态
+        function checkFeatureStatus() {
+            log('检查增强功能状态...');
+            
+            // 检查API客户端
+            fetch('/enhanced_agents_api.js')
+                .then(response => {
+                    if (response.ok) {
+                        log('✓ 增强API客户端可访问', 'success');
+                        updateStatus('enhanced-api', true);
+                    } else {
+                        log('✗ 增强API客户端不可访问', 'error');
+                        updateStatus('enhanced-api', false);
+                    }
+                })
+                .catch(error => {
+                    log('✗ API客户端检查失败: ' + error.message, 'error');
+                    updateStatus('enhanced-api', false);
+                });
+
+            // 检查UI增强器
+            fetch('/chatwoot_ui_enhancer.js')
+                .then(response => {
+                    if (response.ok) {
+                        log('✓ UI增强器可访问', 'success');
+                        updateStatus('ui-enhancer', true);
+                    } else {
+                        log('✗ UI增强器不可访问', 'error');
+                        updateStatus('ui-enhancer', false);
+                    }
+                })
+                .catch(error => {
+                    log('✗ UI增强器检查失败: ' + error.message, 'error');
+                    updateStatus('ui-enhancer', false);
+                });
+
+            // 检查Chatwoot服务
+            fetch('/')
+                .then(response => {
+                    if (response.ok) {
+                        log('✓ Chatwoot服务正常', 'success');
+                        updateStatus('chatwoot', true);
+                    } else {
+                        log('✗ Chatwoot服务异常', 'error');
+                        updateStatus('chatwoot', false);
+                    }
+                })
+                .catch(error => {
+                    log('✗ Chatwoot服务检查失败: ' + error.message, 'error');
+                    updateStatus('chatwoot', false);
+                });
+        }
+
+        function updateStatus(component, status) {
+            const statusDisplay = document.getElementById('status-display');
+            const statusClass = status ? 'success' : 'error';
+            const statusText = status ? '正常' : '异常';
+            const componentName = {
+                'enhanced-api': '增强API',
+                'ui-enhancer': 'UI增强器',
+                'chatwoot': 'Chatwoot服务'
+            }[component];
+
+            const statusElement = document.createElement('span');
+            statusElement.className = `status ${statusClass}`;
+            statusElement.textContent = `${componentName}: ${statusText}`;
+            statusDisplay.appendChild(statusElement);
+        }
+
+        // 加载增强API
+        function loadEnhancedAPI() {
+            log('加载增强API客户端...');
+            
+            const script = document.createElement('script');
+            script.src = '/enhanced_agents_api.js';
+            script.onload = () => {
+                log('✓ 增强API客户端加载成功', 'success');
+                if (window.enhancedAgentsAPI) {
+                    log('✓ enhancedAgentsAPI 对象可用', 'success');
+                }
+            };
+            script.onerror = () => {
+                log('✗ 增强API客户端加载失败', 'error');
+            };
+            
+            document.head.appendChild(script);
+        }
+
+        // 加载UI增强器
+        function loadUIEnhancer() {
+            log('加载UI增强器...');
+            
+            const script = document.createElement('script');
+            script.src = '/chatwoot_ui_enhancer.js';
+            script.onload = () => {
+                log('✓ UI增强器加载成功', 'success');
+            };
+            script.onerror = () => {
+                log('✗ UI增强器加载失败', 'error');
+            };
+            
+            document.head.appendChild(script);
+        }
+
+        // 创建演示用户
+        function createDemoUser() {
+            if (!window.enhancedAgentsAPI) {
+                log('请先加载增强API客户端', 'error');
+                return;
+            }
+
+            const userData = {
+                name: document.getElementById('demo-name').value,
+                email: document.getElementById('demo-email').value,
+                role: document.getElementById('demo-role').value,
+                auto_generate_password: document.getElementById('demo-auto-password').checked,
+                confirmed: document.getElementById('demo-confirmed').checked,
+                send_welcome_email: document.getElementById('demo-welcome-email').checked
+            };
+
+            if (!userData.auto_generate_password) {
+                userData.password = document.getElementById('demo-password').value;
+                userData.password_confirmation = document.getElementById('demo-confirm-password').value;
+            }
+
+            log(`创建用户: ${userData.name} (${userData.email})`);
+
+            window.enhancedAgentsAPI.createAgent(userData)
+                .then(result => {
+                    log('✓ 用户创建成功: ' + JSON.stringify(result, null, 2), 'success');
+                })
+                .catch(error => {
+                    log('✗ 用户创建失败: ' + error.message, 'error');
+                });
+        }
+
+        // 获取用户信息
+        function getUserInfo() {
+            if (!window.enhancedAgentsAPI) {
+                log('请先加载增强API客户端', 'error');
+                return;
+            }
+
+            const userId = document.getElementById('demo-user-id').value;
+            log(`获取用户信息: ID ${userId}`);
+
+            window.enhancedAgentsAPI.getAgent(userId)
+                .then(result => {
+                    log('✓ 用户信息: ' + JSON.stringify(result, null, 2), 'success');
+                })
+                .catch(error => {
+                    log('✗ 获取用户信息失败: ' + error.message, 'error');
+                });
+        }
+
+        // 切换用户认证状态
+        function toggleUserConfirmation() {
+            if (!window.enhancedAgentsAPI) {
+                log('请先加载增强API客户端', 'error');
+                return;
+            }
+
+            const userId = document.getElementById('demo-user-id').value;
+            log(`切换用户认证状态: ID ${userId}`);
+
+            window.enhancedAgentsAPI.toggleConfirmation(userId)
+                .then(result => {
+                    log('✓ 认证状态切换成功: ' + result.message, 'success');
+                })
+                .catch(error => {
+                    log('✗ 认证状态切换失败: ' + error.message, 'error');
+                });
+        }
+
+        // 重置用户密码
+        function resetUserPassword() {
+            if (!window.enhancedAgentsAPI) {
+                log('请先加载增强API客户端', 'error');
+                return;
+            }
+
+            const userId = document.getElementById('demo-user-id').value;
+            const newPassword = prompt('输入新密码（留空自动生成）:');
+            const forceChange = confirm('是否要求用户下次登录时修改密码？');
+
+            log(`重置用户密码: ID ${userId}`);
+
+            window.enhancedAgentsAPI.resetPassword(userId, {
+                password: newPassword,
+                force_password_change: forceChange
+            })
+                .then(result => {
+                    log('✓ 密码重置成功，新密码: ' + result.password, 'success');
+                })
+                .catch(error => {
+                    log('✗ 密码重置失败: ' + error.message, 'error');
+                });
+        }
+
+        // 注入到当前页面
+        function injectToCurrentPage() {
+            log('注入增强功能到当前页面...');
+            
+            // 加载两个增强脚本
+            loadEnhancedAPI();
+            setTimeout(() => {
+                loadUIEnhancer();
+                log('✓ 增强功能已注入到当前页面', 'success');
+            }, 1000);
+        }
+
+        // 打开增强版Chatwoot
+        function openChatwootWithEnhancements() {
+            log('打开增强版Chatwoot...');
+            
+            const chatwootURL = 'http://localhost:3000';
+            const enhancedWindow = window.open(chatwootURL, '_blank');
+            
+            // 等待页面加载后注入增强功能
+            setTimeout(() => {
+                try {
+                    // 注入增强API
+                    const apiScript = enhancedWindow.document.createElement('script');
+                    apiScript.src = '/enhanced_agents_api.js';
+                    enhancedWindow.document.head.appendChild(apiScript);
+                    
+                    // 注入UI增强器
+                    setTimeout(() => {
+                        const uiScript = enhancedWindow.document.createElement('script');
+                        uiScript.src = '/chatwoot_ui_enhancer.js';
+                        enhancedWindow.document.head.appendChild(uiScript);
+                        
+                        log('✓ 增强功能已注入到新窗口', 'success');
+                    }, 1000);
+                } catch (error) {
+                    log('✗ 无法注入到新窗口（跨域限制）: ' + error.message, 'error');
+                    log('请手动在新窗口的控制台中运行增强脚本', 'info');
+                }
+            }, 2000);
+        }
+
+        // 密码字段显示/隐藏
+        document.getElementById('demo-auto-password').addEventListener('change', function() {
+            const manualPasswordDiv = document.getElementById('demo-manual-password');
+            manualPasswordDiv.style.display = this.checked ? 'none' : 'block';
+        });
+
+        // 页面加载完成后自动检查状态
+        window.addEventListener('load', () => {
+            log('演示页面加载完成');
+            setTimeout(checkFeatureStatus, 1000);
+        });
+    </script>
+</body>
+</html>

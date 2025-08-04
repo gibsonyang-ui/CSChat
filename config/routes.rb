@@ -51,6 +51,14 @@ Rails.application.routes.draw do
           resources :agents, only: [:index, :create, :update, :destroy] do
             post :bulk_create, on: :collection
           end
+
+          # Enhanced user management routes
+          resources :enhanced_agents do
+            member do
+              patch :toggle_confirmation
+              patch :reset_password
+            end
+          end
           namespace :captain do
             resources :assistants do
               member do

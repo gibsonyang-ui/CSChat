@@ -20,6 +20,7 @@
         }
       },
       // Add the IDs of extensions you want installed when the container is created.
+      // cSpell:ignore misogi rubocop davidpallinder mrmlnc mailhog
       "extensions": [
         "Shopify.ruby-lsp",
         "misogi.ruby-rubocop",
