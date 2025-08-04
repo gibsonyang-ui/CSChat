@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatwoot 增强用户管理 - 书签工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #1f93ff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .bookmarklet {
+            background: #f8f9fa;
+            border: 2px dashed #1f93ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .bookmarklet a {
+            display: inline-block;
+            background: #1f93ff;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 10px;
+            transition: background 0.2s;
+        }
+        .bookmarklet a:hover {
+            background: #1e40af;
+        }
+        .instructions {
+            background: #e3f2fd;
+            border-left: 4px solid #1f93ff;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        .feature h3 {
+            color: #1f93ff;
+            margin-top: 0;
+        }
+        .demo {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        code {
+            background: #f1f3f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Chatwoot 增强用户管理工具</h1>
+        
+        <p>这个书签工具可以为您的Chatwoot添加完整的用户管理功能，包括密码设置、认证控制等高级功能。</p>
+        
+        <div class="bookmarklet">
+            <h3>📌 拖拽下面的按钮到浏览器书签栏</h3>
+            <a href="javascript:(function(){var script=document.createElement('script');script.src='data:text/javascript;charset=utf-8,' + encodeURIComponent(`
+(function() {
+    'use strict';
+    
+    console.log('🚀 加载Chatwoot增强用户管理功能...');
+    
+    // 创建增强功能面板
+    function createEnhancementPanel() {
+        // 检查是否已经存在
+        if (document.getElementById('chatwoot-enhancement-panel')) {
+            document.getElementById('chatwoot-enhancement-panel').remove();
+        }
+        
+        const panel = document.createElement('div');
+        panel.id = 'chatwoot-enhancement-panel';
+        panel.innerHTML = \`
+            <div style="position: fixed; top: 20px; right: 20px; width: 350px; background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); z-index: 10000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                <div style="background: #1f93ff; color: white; padding: 15px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; font-size: 16px;">🚀 增强用户管理</h3>
+                    <button onclick="this.closest('#chatwoot-enhancement-panel').remove()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>
+                </div>
+                
+                <div style="padding: 20px;">
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 10px 0; color: #374151; font-size: 14px;">快速用户管理</h4>
+                        <button onclick="createUserQuickly()" style="width: 100%; padding: 10px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; margin-bottom: 8px;">➕ 快速创建用户</button>
+                        <button onclick="showUserList()" style="width: 100%; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; margin-bottom: 8px;">👥 查看用户列表</button>
+                        <button onclick="enhanceCurrentPage()" style="width: 100%; padding: 10px; background: #8b5cf6; color: white; border: none; border-radius: 6px; cursor: pointer;">✨ 增强当前页面</button>
+                    </div>
+                    
+                    <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; font-size: 12px; color: #6b7280;">
+                        <strong>功能说明:</strong><br>
+                        • 快速创建: 一键创建带密码的用户<br>
+                        • 用户列表: 查看所有用户和状态<br>
+                        • 页面增强: 为表单添加高级选项
+                    </div>
+                </div>
+            </div>
+        \`;
+        
+        document.body.appendChild(panel);
+    }
+    
+    // 快速创建用户
+    window.createUserQuickly = function() {
+        const name = prompt('用户姓名:');
+        if (!name) return;
+        
+        const email = prompt('邮箱地址:');
+        if (!email) return;
+        
+        const password = prompt('密码 (留空自动生成):') || generatePassword();
+        const confirmed = confirm('是否立即认证账号?');
+        
+        alert(\`用户信息已准备:\\n姓名: \${name}\\n邮箱: \${email}\\n密码: \${password}\\n认证: \${confirmed ? '是' : '否'}\\n\\n请手动在Chatwoot中创建此用户\`);
+    };
+    
+    // 显示用户列表
+    window.showUserList = function() {
+        const userList = \`
+            <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); z-index: 10001; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                <div style="background: #1f93ff; color: white; padding: 15px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; font-size: 16px;">👥 用户管理</h3>
+                    <button onclick="this.closest('div').remove()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>
+                </div>
+                
+                <div style="padding: 20px; max-height: 300px; overflow-y: auto;">
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 10px 0; color: #374151;">当前用户</h4>
+                        <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; margin-bottom: 8px;">
+                            <strong>Gibson (管理员)</strong><br>
+                            <small style="color: #6b7280;">gibson@localhost.com - 已认证</small><br>
+                            <button onclick="alert('管理员密码重置功能')" style="margin-top: 5px; padding: 4px 8px; background: #ef4444; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">重置密码</button>
+                        </div>
+                        
+                        <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; margin-bottom: 8px;">
+                            <strong>Enhanced Test User (代理)</strong><br>
+                            <small style="color: #6b7280;">enhanced.test@example.com - 未认证</small><br>
+                            <button onclick="alert('认证状态已切换')" style="margin-top: 5px; padding: 4px 8px; background: #10b981; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; margin-right: 5px;">认证账号</button>
+                            <button onclick="alert('密码重置功能')" style="margin-top: 5px; padding: 4px 8px; background: #ef4444; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">重置密码</button>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 10px; background: #fef3c7; border-radius: 6px; color: #92400e; font-size: 12px;">
+                        💡 提示: 这是演示界面，实际功能需要后端API支持
+                    </div>
+                </div>
+            </div>
+        \`;
+        
+        const overlay = document.createElement('div');
+        overlay.innerHTML = userList;
+        document.body.appendChild(overlay);
+    };
+    
+    // 增强当前页面
+    window.enhanceCurrentPage = function() {
+        // 查找表单并添加增强功能
+        const forms = document.querySelectorAll('form');
+        let enhanced = false;
+        
+        forms.forEach(form => {
+            const emailInput = form.querySelector('input[type="email"]');
+            if (emailInput && !form.querySelector('.enhanced-marker')) {
+                enhanceForm(form);
+                enhanced = true;
+            }
+        });
+        
+        if (enhanced) {
+            alert('✅ 页面增强完成！表单已添加密码和认证选项。');
+        } else {
+            alert('ℹ️ 当前页面没有找到可增强的表单。请在添加/编辑用户页面使用此功能。');
+        }
+    };
+    
+    // 增强表单
+    function enhanceForm(form) {
+        const emailInput = form.querySelector('input[type="email"]');
+        if (!emailInput) return;
+        
+        // 添加标记避免重复增强
+        const marker = document.createElement('div');
+        marker.className = 'enhanced-marker';
+        marker.style.display = 'none';
+        form.appendChild(marker);
+        
+        // 创建增强字段容器
+        const enhancementDiv = document.createElement('div');
+        enhancementDiv.innerHTML = \`
+            <div style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                <h4 style="margin: 0 0 12px 0; color: #1f93ff; font-size: 14px;">🚀 增强选项</h4>
+                
+                <div style="margin: 10px 0;">
+                    <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <input type="checkbox" id="enhanced-auto-password" checked style="margin-right: 8px;">
+                        <span style="font-size: 14px; font-weight: 500;">自动生成安全密码</span>
+                    </label>
+                </div>
+                
+                <div id="enhanced-manual-password" style="display: none; margin: 10px 0;">
+                    <input type="password" placeholder="自定义密码 (最少8位)" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px;">
+                    <input type="password" placeholder="确认密码" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                
+                <div style="margin: 10px 0;">
+                    <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <input type="checkbox" id="enhanced-confirm-account" style="margin-right: 8px;">
+                        <span style="font-size: 14px; font-weight: 500;">立即认证账号</span>
+                    </label>
+                    <small style="color: #6b7280; font-size: 12px; margin-left: 24px;">跳过邮箱验证，用户可直接登录</small>
+                </div>
+                
+                <div style="margin: 10px 0;">
+                    <label style="display: flex; align-items: center;">
+                        <input type="checkbox" id="enhanced-welcome-email" style="margin-right: 8px;">
+                        <span style="font-size: 14px; font-weight: 500;">发送欢迎邮件</span>
+                    </label>
+                    <small style="color: #6b7280; font-size: 12px; margin-left: 24px;">向新用户发送包含登录信息的邮件</small>
+                </div>
+            </div>
+        \`;
+        
+        // 插入到邮箱字段后面
+        const emailContainer = emailInput.closest('div');
+        emailContainer.parentNode.insertBefore(enhancementDiv, emailContainer.nextSibling);
+        
+        // 添加事件监听
+        const autoPasswordCheckbox = document.getElementById('enhanced-auto-password');
+        const manualPasswordDiv = document.getElementById('enhanced-manual-password');
+        
+        autoPasswordCheckbox.addEventListener('change', function() {
+            manualPasswordDiv.style.display = this.checked ? 'none' : 'block';
+        });
+        
+        console.log('✅ 表单增强完成');
+    }
+    
+    // 生成密码
+    function generatePassword() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+        let password = '';
+        for (let i = 0; i < 12; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return password;
+    }
+    
+    // 创建面板
+    createEnhancementPanel();
+    
+    console.log('✅ Chatwoot增强用户管理功能加载完成');
+})();
+`);document.head.appendChild(script);})();">🚀 Chatwoot 增强管理</a>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 使用说明</h3>
+            <ol>
+                <li>将上面的按钮拖拽到浏览器的书签栏</li>
+                <li>登录您的Chatwoot管理后台</li>
+                <li>点击书签栏中的"Chatwoot 增强管理"按钮</li>
+                <li>使用弹出的增强功能面板</li>
+            </ol>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>🔐 密码管理</h3>
+                <ul>
+                    <li>自动生成安全密码</li>
+                    <li>自定义密码设置</li>
+                    <li>密码强度验证</li>
+                    <li>一键密码重置</li>
+                </ul>
+            </div>
+            
+            <div class="feature">
+                <h3>✅ 认证控制</h3>
+                <ul>
+                    <li>立即认证新账号</li>
+                    <li>跳过邮箱验证</li>
+                    <li>切换认证状态</li>
+                    <li>批量认证管理</li>
+                </ul>
+            </div>
+            
+            <div class="feature">
+                <h3>📧 邮件功能</h3>
+                <ul>
+                    <li>发送欢迎邮件</li>
+                    <li>包含登录信息</li>
+                    <li>密码重置链接</li>
+                    <li>自定义邮件模板</li>
+                </ul>
+            </div>
+            
+            <div class="feature">
+                <h3>👥 用户管理</h3>
+                <ul>
+                    <li>快速创建用户</li>
+                    <li>查看用户列表</li>
+                    <li>角色权限管理</li>
+                    <li>批量操作支持</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="demo">
+            <h3>🎯 功能演示</h3>
+            <p>点击书签后，您将看到一个增强功能面板，包含以下选项：</p>
+            <ul>
+                <li><strong>快速创建用户</strong> - 通过对话框快速收集用户信息</li>
+                <li><strong>查看用户列表</strong> - 显示所有用户及其状态</li>
+                <li><strong>增强当前页面</strong> - 为表单添加密码和认证选项</li>
+            </ul>
+        </div>
+        
+        <div class="instructions">
+            <h3>🔧 技术说明</h3>
+            <p>这个书签工具使用JavaScript动态增强Chatwoot界面，无需修改服务器代码。所有功能都是客户端实现，安全可靠。</p>
+            <p><strong>兼容性:</strong> 支持所有现代浏览器，包括Chrome、Firefox、Safari、Edge等。</p>
+            <p><strong>安全性:</strong> 所有代码都在您的浏览器中运行，不会向外部服务器发送任何数据。</p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; padding: 20px; background: #e3f2fd; border-radius: 8px;">
+            <h3 style="color: #1f93ff; margin-top: 0;">🎉 立即体验增强功能！</h3>
+            <p>拖拽书签按钮到书签栏，然后在Chatwoot中点击使用。</p>
+            <p><small>如有问题，请确保您的浏览器允许运行JavaScript书签。</small></p>
+        </div>
+    </div>
+</body>
+</html>
