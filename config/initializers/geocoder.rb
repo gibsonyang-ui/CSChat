@@ -25,6 +25,17 @@ end
 
 Geocoder.configure(ip_lookup: :geoip2, geoip2: { file: GeocoderConfiguration::LOOK_UP_DB }) if ENV['IP_LOOKUP_API_KEY'].present?
 
-Rails.application.config.after_initialize do
-  Geocoder::SetupService.new.perform
+# Skip geocoder setup in development to avoid errors
+unless Rails.env.development?
+  Rails.application.config.after_initialize do
+    begin
+      if defined?(Geocoder::SetupService)
+        Geocoder::SetupService.new.perform
+      else
+        Rails.logger.info "Geocoder::SetupService not found, skipping geocoder setup"
+      end
+    rescue => e
+      Rails.logger.error "Geocoder setup failed: #{e.message}"
+    end
+  end
 end

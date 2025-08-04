@@ -33,6 +33,7 @@ Rails.application.routes.draw do
   end
 
   get '/api', to: 'api#index'
+  get '/health', to: 'health#show'
   namespace :api, defaults: { format: 'json' } do
     namespace :v1 do
       # ----------------------------------
