@@ -34,6 +34,10 @@ const props = defineProps({
     type: Number,
     default: null,
   },
+  confirmed: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['close']);
@@ -47,6 +51,9 @@ const agentName = ref(props.name);
 const agentAvailability = ref(props.availability);
 const selectedRoleId = ref(props.customRoleId || props.type);
 const agentCredentials = ref({ email: props.email });
+const newPassword = ref('');
+const confirmNewPassword = ref('');
+const forcePasswordChange = ref(false);
 
 const rules = {
   agentName: { required, minLength: minLength(1) },
@@ -147,6 +154,41 @@ const resetPassword = async () => {
     useAlert(t('AGENT_MGMT.EDIT.PASSWORD_RESET.ERROR_MESSAGE'));
   }
 };
+
+const setNewPassword = async () => {
+  if (!newPassword.value || newPassword.value !== confirmNewPassword.value) {
+    useAlert('Password and confirmation do not match');
+    return;
+  }
+
+  try {
+    const payload = {
+      password: newPassword.value,
+      force_password_change: forcePasswordChange.value,
+    };
+
+    await store.dispatch('agents/resetPassword', {
+      id: props.id,
+      ...payload,
+    });
+
+    useAlert('Password updated successfully');
+    newPassword.value = '';
+    confirmNewPassword.value = '';
+    forcePasswordChange.value = false;
+  } catch (error) {
+    useAlert('Failed to update password');
+  }
+};
+
+const toggleConfirmation = async () => {
+  try {
+    await store.dispatch('agents/toggleConfirmation', { id: props.id });
+    useAlert('User confirmation status updated');
+  } catch (error) {
+    useAlert('Failed to update confirmation status');
+  }
+};
 </script>
 
 <template>
@@ -198,6 +240,77 @@ const resetPassword = async () => {
             {{ $t('AGENT_MGMT.EDIT.FORM.AGENT_AVAILABILITY.ERROR') }}
           </span>
         </label>
+      </div>
+
+      <!-- 认证状态控制 -->
+      <div class="w-full">
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div>
+            <h4 class="font-medium">{{ $t('AGENT_MGMT.EDIT.FORM.CONFIRMATION_STATUS') || 'Account Verification' }}</h4>
+            <p class="text-sm text-gray-600">
+              {{ confirmed ? 'Account is verified' : 'Account is not verified' }}
+            </p>
+          </div>
+          <Button
+            :variant="confirmed ? 'warning' : 'success'"
+            size="small"
+            @click="toggleConfirmation"
+          >
+            {{ confirmed ? 'Revoke Verification' : 'Verify Account' }}
+          </Button>
+        </div>
+      </div>
+
+      <!-- 密码管理 -->
+      <div class="w-full">
+        <div class="p-4 bg-gray-50 rounded-lg">
+          <h4 class="font-medium mb-3">{{ $t('AGENT_MGMT.EDIT.FORM.PASSWORD_MANAGEMENT') || 'Password Management' }}</h4>
+
+          <div class="space-y-3">
+            <div>
+              <label>
+                {{ $t('AGENT_MGMT.EDIT.FORM.NEW_PASSWORD') || 'New Password' }}
+                <input
+                  v-model="newPassword"
+                  type="password"
+                  placeholder="Enter new password (min 8 characters)"
+                />
+              </label>
+            </div>
+
+            <div>
+              <label>
+                {{ $t('AGENT_MGMT.EDIT.FORM.CONFIRM_NEW_PASSWORD') || 'Confirm New Password' }}
+                <input
+                  v-model="confirmNewPassword"
+                  type="password"
+                  placeholder="Confirm new password"
+                />
+              </label>
+            </div>
+
+            <div>
+              <label>
+                <input
+                  v-model="forcePasswordChange"
+                  type="checkbox"
+                  class="mr-2"
+                />
+                {{ $t('AGENT_MGMT.EDIT.FORM.FORCE_PASSWORD_CHANGE') || 'Force password change on next login' }}
+              </label>
+            </div>
+
+            <div class="flex space-x-2">
+              <Button
+                size="small"
+                :disabled="!newPassword || newPassword !== confirmNewPassword"
+                @click="setNewPassword"
+              >
+                {{ $t('AGENT_MGMT.EDIT.FORM.SET_PASSWORD') || 'Set New Password' }}
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="flex flex-row justify-start w-full gap-2 px-0 py-2">

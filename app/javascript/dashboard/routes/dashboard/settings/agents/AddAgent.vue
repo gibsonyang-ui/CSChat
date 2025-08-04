@@ -4,7 +4,7 @@ import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useI18n } from 'vue-i18n';
 import { useAlert } from 'dashboard/composables';
 import { useVuelidate } from '@vuelidate/core';
-import { required, email } from '@vuelidate/validators';
+import { required, email, minLength } from '@vuelidate/validators';
 import Button from 'dashboard/components-next/button/Button.vue';
 
 const emit = defineEmits(['close']);
@@ -15,17 +15,47 @@ const { t } = useI18n();
 const agentName = ref('');
 const agentEmail = ref('');
 const selectedRoleId = ref('agent');
+const agentPassword = ref('');
+const confirmPassword = ref('');
+const autoGeneratePassword = ref(true);
+const confirmAccount = ref(false);
+const sendWelcomeEmail = ref(false);
+const agentPassword = ref('');
+const confirmPassword = ref('');
+const autoGeneratePassword = ref(true);
+const confirmAccount = ref(false);
+const sendWelcomeEmail = ref(false);
 
-const rules = {
+const passwordValidation = computed(() => {
+  if (autoGeneratePassword.value) return {};
+  return {
+    required,
+    minLength: minLength(8),
+  };
+});
+
+const confirmPasswordValidation = computed(() => {
+  if (autoGeneratePassword.value) return {};
+  return {
+    required,
+    sameAsPassword: (value) => value === agentPassword.value,
+  };
+});
+
+const rules = computed(() => ({
   agentName: { required },
   agentEmail: { required, email },
   selectedRoleId: { required },
-};
+  agentPassword: passwordValidation.value,
+  confirmPassword: confirmPasswordValidation.value,
+}));
 
 const v$ = useVuelidate(rules, {
   agentName,
   agentEmail,
   selectedRoleId,
+  agentPassword,
+  confirmPassword,
 });
 
 const uiFlags = useMapGetter('agents/getUIFlags');
@@ -69,7 +99,15 @@ const addAgent = async () => {
     const payload = {
       name: agentName.value,
       email: agentEmail.value,
+      confirmed: confirmAccount.value,
+      send_welcome_email: sendWelcomeEmail.value,
     };
+
+    // 添加密码（如果不是自动生成）
+    if (!autoGeneratePassword.value && agentPassword.value) {
+      payload.password = agentPassword.value;
+      payload.password_confirmation = confirmPassword.value;
+    }
 
     if (selectedRole.value.name.startsWith('custom_')) {
       payload.custom_role_id = selectedRole.value.id;
@@ -144,6 +182,71 @@ const addAgent = async () => {
             :placeholder="$t('AGENT_MGMT.ADD.FORM.EMAIL.PLACEHOLDER')"
             @input="v$.agentEmail.$touch"
           />
+        </label>
+      </div>
+
+      <!-- 密码设置 -->
+      <div class="w-full">
+        <label>
+          <input
+            v-model="autoGeneratePassword"
+            type="checkbox"
+            class="mr-2"
+          />
+          {{ $t('AGENT_MGMT.ADD.FORM.AUTO_GENERATE_PASSWORD') || 'Auto-generate password' }}
+        </label>
+      </div>
+
+      <div v-if="!autoGeneratePassword" class="w-full">
+        <label :class="{ error: v$.agentPassword.$error }">
+          {{ $t('AGENT_MGMT.ADD.FORM.PASSWORD.LABEL') || 'Password' }}
+          <input
+            v-model="agentPassword"
+            type="password"
+            :placeholder="$t('AGENT_MGMT.ADD.FORM.PASSWORD.PLACEHOLDER') || 'Enter password (min 8 characters)'"
+            @input="v$.agentPassword.$touch"
+          />
+          <span v-if="v$.agentPassword.$error" class="message">
+            {{ $t('AGENT_MGMT.ADD.FORM.PASSWORD.ERROR') || 'Password must be at least 8 characters' }}
+          </span>
+        </label>
+      </div>
+
+      <div v-if="!autoGeneratePassword" class="w-full">
+        <label :class="{ error: v$.confirmPassword.$error }">
+          {{ $t('AGENT_MGMT.ADD.FORM.CONFIRM_PASSWORD.LABEL') || 'Confirm Password' }}
+          <input
+            v-model="confirmPassword"
+            type="password"
+            :placeholder="$t('AGENT_MGMT.ADD.FORM.CONFIRM_PASSWORD.PLACEHOLDER') || 'Confirm password'"
+            @input="v$.confirmPassword.$touch"
+          />
+          <span v-if="v$.confirmPassword.$error" class="message">
+            {{ $t('AGENT_MGMT.ADD.FORM.CONFIRM_PASSWORD.ERROR') || 'Passwords do not match' }}
+          </span>
+        </label>
+      </div>
+
+      <!-- 认证设置 -->
+      <div class="w-full">
+        <label>
+          <input
+            v-model="confirmAccount"
+            type="checkbox"
+            class="mr-2"
+          />
+          {{ $t('AGENT_MGMT.ADD.FORM.CONFIRM_ACCOUNT') || 'Verify account immediately' }}
+        </label>
+      </div>
+
+      <div class="w-full">
+        <label>
+          <input
+            v-model="sendWelcomeEmail"
+            type="checkbox"
+            class="mr-2"
+          />
+          {{ $t('AGENT_MGMT.ADD.FORM.SEND_WELCOME_EMAIL') || 'Send welcome email' }}
         </label>
       </div>
 
