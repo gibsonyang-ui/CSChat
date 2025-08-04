@@ -9,8 +9,7 @@ services:
     environment:
       POSTGRES_DB: chatwoot
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_PASSWORD: chatwoot_password
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -49,7 +48,7 @@ services:
       # 数据库配置
       POSTGRES_HOST: postgres
       POSTGRES_USERNAME: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: chatwoot_password
       POSTGRES_DATABASE: chatwoot
       
       # Redis配置
@@ -105,7 +104,7 @@ services:
       # 数据库配置
       POSTGRES_HOST: postgres
       POSTGRES_USERNAME: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: chatwoot_password
       POSTGRES_DATABASE: chatwoot
 
       # Redis配置

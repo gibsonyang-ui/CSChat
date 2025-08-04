@@ -42,33 +42,6 @@ services:
       - ./app/controllers:/app/app/controllers
       - ./config:/app/config
     env_file: .env
-    command: >
-      sh -c "
-        echo 'Waiting for PostgreSQL...'
-        while ! nc -z postgres 5432; do sleep 1; done
-        echo 'PostgreSQL is ready!'
-
-        echo 'Running database setup...'
-        bundle exec rails db:create db:migrate db:seed
-
-        echo 'Creating admin user...'
-        bundle exec rails runner \"
-          account = Account.find_or_create_by(name: 'Default Account')
-          user = User.find_or_create_by(email: 'gibson@localhost.com') do |u|
-            u.name = 'Gibson Yang'
-            u.password = 'Gibson888555!'
-            u.password_confirmation = 'Gibson888555!'
-            u.confirmed_at = Time.current
-          end
-          AccountUser.find_or_create_by(account: account, user: user) do |au|
-            au.role = 'administrator'
-          end
-          puts 'Admin user created!'
-        \"
-
-        echo 'Starting Chatwoot...'
-        bundle exec rails server -b 0.0.0.0 -p 3000
-      "
 
 volumes:
   postgres_data:

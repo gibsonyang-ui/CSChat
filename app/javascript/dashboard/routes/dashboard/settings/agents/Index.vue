@@ -150,7 +150,7 @@ const showEnhancedActions = (agent) => {
   return agent.id !== currentUserId.value;
 };
 
-// 切换认证状态
+// ?�换认�??��?
 const toggleConfirmation = async (agent) => {
   if (enhancedLoading.value[agent.id]) return;
 
@@ -171,25 +171,25 @@ const toggleConfirmation = async (agent) => {
 
     const data = await response.json();
 
-    // 更新本地状态
+    // ?�新?�地?��?
     store.dispatch('agents/get');
 
     showAlert({
       type: 'success',
-      message: data.message || (agent.confirmed ? '认证已撤销' : '用户已认证'),
+      message: data.message || (agent.confirmed ? '认�?已撤?�' : '?�户已认�?),
     });
   } catch (error) {
     console.error('Toggle confirmation error:', error);
     showAlert({
       type: 'error',
-      message: '操作失败: ' + error.message,
+      message: '?��?失败: ' + error.message,
     });
   } finally {
     enhancedLoading.value = { ...enhancedLoading.value, [agent.id]: false };
   }
 };
 
-// 打开密码重置模态框
+// ?��?密�??�置模态�?
 const openPasswordModal = (agent) => {
   selectedAgentForPassword.value = agent;
   newPassword.value = '';
@@ -198,7 +198,7 @@ const openPasswordModal = (agent) => {
   showPasswordModal.value = true;
 };
 
-// 关闭密码重置模态框
+// ?�闭密�??�置模态�?
 const closePasswordModal = () => {
   showPasswordModal.value = false;
   selectedAgentForPassword.value = null;
@@ -206,7 +206,7 @@ const closePasswordModal = () => {
   confirmPassword.value = '';
 };
 
-// 重置密码
+// ?�置密�?
 const resetPassword = async () => {
   if (!selectedAgentForPassword.value) return;
 
@@ -214,7 +214,7 @@ const resetPassword = async () => {
     if (!newPassword.value || newPassword.value.length < 8) {
       showAlert({
         type: 'error',
-        message: '密码长度至少8位',
+        message: '密�??�度?��?8�?,
       });
       return;
     }
@@ -222,7 +222,7 @@ const resetPassword = async () => {
     if (newPassword.value !== confirmPassword.value) {
       showAlert({
         type: 'error',
-        message: '密码确认不匹配',
+        message: '密�?确认不匹??,
       });
       return;
     }
@@ -248,12 +248,12 @@ const resetPassword = async () => {
 
     const data = await response.json();
 
-    // 更新本地状态
+    // ?�新?�地?��?
     store.dispatch('agents/get');
 
     showAlert({
       type: 'success',
-      message: `密码重置成功！新密码: ${data.password}`,
+      message: `密�??�置?��?！新密�?: ${data.password}`,
       duration: 10000,
     });
 
@@ -262,12 +262,12 @@ const resetPassword = async () => {
     console.error('Reset password error:', error);
     showAlert({
       type: 'error',
-      message: '密码重置失败: ' + error.message,
+      message: '密�??�置失败: ' + error.message,
     });
   }
 };
 
-// 生成随机密码预览
+// ?��??�机密�?预�?
 const generatePasswordPreview = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
   let password = '';
@@ -378,7 +378,7 @@ const generatePasswordPreview = () => {
                 />
                 <Button
                   v-if="showEnhancedActions(agent)"
-                  v-tooltip.top="agent.confirmed ? '撤销认证' : '确认认证'"
+                  v-tooltip.top="agent.confirmed ? '?��?认�?' : '确认认�?'"
                   :icon="agent.confirmed ? 'i-lucide-user-x' : 'i-lucide-user-check'"
                   xs
                   :emerald="!agent.confirmed"
@@ -389,7 +389,7 @@ const generatePasswordPreview = () => {
                 />
                 <Button
                   v-if="showEnhancedActions(agent)"
-                  v-tooltip.top="'重置密码'"
+                  v-tooltip.top="'?�置密�?'"
                   icon="i-lucide-key"
                   xs
                   slate
@@ -441,7 +441,7 @@ const generatePasswordPreview = () => {
       :reject-text="deleteRejectText"
     />
 
-    <!-- 密码重置模态框 -->
+    <!-- 密�??�置模态�? -->
     <Modal
       v-model:show="showPasswordModal"
       :on-close="closePasswordModal"
@@ -449,7 +449,7 @@ const generatePasswordPreview = () => {
     >
       <div class="p-6">
         <h3 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">
-          重置密码 - {{ selectedAgentForPassword?.name }}
+          ?�置密�? - {{ selectedAgentForPassword?.name }}
         </h3>
 
         <div class="space-y-4">
@@ -461,7 +461,7 @@ const generatePasswordPreview = () => {
               class="rounded border-slate-300 dark:border-slate-600"
             />
             <label for="auto-generate" class="text-sm text-slate-700 dark:text-slate-300">
-              自动生成安全密码 (推荐)
+              ?�动?��?安全密�? (?��?)
             </label>
           </div>
 
@@ -469,25 +469,25 @@ const generatePasswordPreview = () => {
             <Input
               v-model="newPassword"
               type="password"
-              label="新密码"
-              placeholder="请输入新密码 (至少8位)"
+              label="?��???
+              placeholder="请�??�新密�? (?��?8�?"
               required
             />
             <Input
               v-model="confirmPassword"
               type="password"
-              label="确认密码"
-              placeholder="请再次输入密码"
+              label="确认密�?"
+              placeholder="请�?次�??��???
               required
             />
           </div>
 
           <div v-else class="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
             <p class="text-sm text-slate-700 dark:text-slate-300">
-              将生成一个12位的安全密码，包含大小写字母、数字和特殊字符。
+              将�??��?�?2位�?安全密�?，�??�大小�?字�??�数字�??��?字符??
             </p>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              示例: {{ generatePasswordPreview() }}
+              示�?: {{ generatePasswordPreview() }}
             </p>
           </div>
         </div>
@@ -497,12 +497,12 @@ const generatePasswordPreview = () => {
             variant="clear"
             @click="closePasswordModal"
           >
-            取消
+            ?��?
           </Button>
           <Button
             @click="resetPassword"
           >
-            重置密码
+            ?�置密�?
           </Button>
         </div>
       </div>
