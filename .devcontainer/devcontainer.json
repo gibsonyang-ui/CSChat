@@ -3,30 +3,32 @@
   "service": "app",
   "dockerComposeFile": "docker-compose.yml",
 
-  "settings": {
-    "terminal.integrated.shell.linux": "/bin/zsh",
-    "extensions.showRecommendationsOnlyOnDemand": true,
-    "editor.formatOnSave": true,
-    "files.trimTrailingWhitespace": true,
-    "files.insertFinalNewline": true,
-    "search.exclude": {
-      "**/node_modules": true,
-      "**/tmp": true,
-      "**/log": true,
-      "**/coverage": true,
-      "**/public/packs": true
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/zsh",
+        "extensions.ignoreRecommendations": true,
+        "editor.formatOnSave": true,
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "search.exclude": {
+          "**/node_modules": true,
+          "**/tmp": true,
+          "**/log": true,
+          "**/coverage": true,
+          "**/public/packs": true
+        }
+      },
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "Shopify.ruby-lsp",
+        "misogi.ruby-rubocop",
+        "davidpallinder.rails-test-runner",
+        "github.copilot",
+        "mrmlnc.vscode-duplicate"
+      ]
     }
   },
-
-
-  // Add the IDs of extensions you want installed when the container is created.
-  "extensions": [
-    "Shopify.ruby-lsp",
-    "misogi.ruby-rubocop",
-    "davidpallinder.rails-test-runner",
-    "github.copilot",
-    "mrmlnc.vscode-duplicate"
-  ],
 
 
   // 5432 postgres
