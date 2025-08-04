@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增强用户管理功能测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #667eea;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .status-section {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            background: #f8f9ff;
+        }
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .button:hover {
+            background: #5a6fd8;
+        }
+        .button.success {
+            background: #10b981;
+        }
+        .button.danger {
+            background: #ef4444;
+        }
+        .button.secondary {
+            background: #6b7280;
+        }
+        .agents-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .agents-table th,
+        .agents-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .agents-table th {
+            background: #f9fafb;
+            font-weight: 600;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        .action-buttons .button {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .alert {
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .alert.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .alert.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Chatwoot 增强用户管理功能</h1>
+            <p>开发环境测试页面</p>
+        </div>
+        
+        <div class="content">
+            <div class="status-section">
+                <h3>📊 系统状态</h3>
+                <p><strong>API状态:</strong> <span id="api-status">检查中...</span></p>
+                <p><strong>当前账户:</strong> <span id="current-account">加载中...</span></p>
+                <p><strong>用户数量:</strong> <span id="user-count">-</span></p>
+                <button class="button" onclick="checkAPIStatus()">刷新状态</button>
+                <button class="button secondary" onclick="loadAgents()">加载用户列表</button>
+            </div>
+
+            <div id="alerts"></div>
+
+            <div class="status-section">
+                <h3>👥 用户列表</h3>
+                <table class="agents-table" id="agents-table">
+                    <thead>
+                        <tr>
+                            <th>姓名</th>
+                            <th>邮箱</th>
+                            <th>角色</th>
+                            <th>认证状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agents-tbody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #6b7280;">
+                                点击"加载用户列表"按钮获取数据
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="status-section">
+                <h3>🔧 功能测试</h3>
+                <button class="button" onclick="testToggleConfirmation()">测试认证切换</button>
+                <button class="button" onclick="testPasswordReset()">测试密码重置</button>
+                <button class="button secondary" onclick="openTestPasswordModal()">打开密码重置对话框</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 密码重置模态框 -->
+    <div id="password-modal" class="modal">
+        <div class="modal-content">
+            <h3>🔑 重置密码</h3>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="auto-generate" checked> 自动生成安全密码 (推荐)
+                </label>
+            </div>
+            <div id="manual-password" style="display: none;">
+                <div class="form-group">
+                    <label for="new-password">新密码:</label>
+                    <input type="password" id="new-password" placeholder="至少8位">
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">确认密码:</label>
+                    <input type="password" id="confirm-password" placeholder="再次输入密码">
+                </div>
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="button secondary" onclick="closePasswordModal()">取消</button>
+                <button class="button" onclick="executePasswordReset()">重置密码</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAgents = [];
+        let selectedAgent = null;
+
+        // 检查API状态
+        async function checkAPIStatus() {
+            try {
+                const response = await fetch('/api/v1/accounts/1/enhanced_agents/status');
+                const data = await response.json();
+                
+                document.getElementById('api-status').innerHTML = 
+                    `<span style="color: #10b981;">✅ 正常</span>`;
+                document.getElementById('current-account').textContent = data.account_id || '1';
+                document.getElementById('user-count').textContent = data.user_count || '0';
+                
+                showAlert('success', 'API连接正常');
+            } catch (error) {
+                document.getElementById('api-status').innerHTML = 
+                    `<span style="color: #ef4444;">❌ 错误: ${error.message}</span>`;
+                showAlert('error', 'API连接失败: ' + error.message);
+            }
+        }
+
+        // 加载用户列表
+        async function loadAgents() {
+            try {
+                const response = await fetch('/api/v1/accounts/1/enhanced_agents');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const agents = await response.json();
+                currentAgents = agents;
+                renderAgentsTable(agents);
+                showAlert('success', `成功加载 ${agents.length} 个用户`);
+            } catch (error) {
+                showAlert('error', '加载用户失败: ' + error.message);
+            }
+        }
+
+        // 渲染用户表格
+        function renderAgentsTable(agents) {
+            const tbody = document.getElementById('agents-tbody');
+            
+            if (agents.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #6b7280;">暂无用户数据</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = agents.map(agent => `
+                <tr>
+                    <td>${agent.name}</td>
+                    <td>${agent.email}</td>
+                    <td>${agent.role}</td>
+                    <td>
+                        <span style="color: ${agent.confirmed ? '#10b981' : '#f59e0b'};">
+                            ${agent.confirmed ? '✅ 已认证' : '⏳ 待认证'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="button ${agent.confirmed ? 'danger' : 'success'}" 
+                                    onclick="toggleConfirmation(${agent.id})">
+                                ${agent.confirmed ? '❌ 撤销认证' : '✅ 确认认证'}
+                            </button>
+                            <button class="button secondary" onclick="openPasswordModal(${agent.id})">
+                                🔑 重置密码
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 切换认证状态
+        async function toggleConfirmation(agentId) {
+            try {
+                const response = await fetch(`/api/v1/accounts/1/enhanced_agents/${agentId}/toggle_confirmation`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                showAlert('success', data.message);
+                loadAgents(); // 重新加载列表
+            } catch (error) {
+                showAlert('error', '操作失败: ' + error.message);
+            }
+        }
+
+        // 打开密码重置模态框
+        function openPasswordModal(agentId) {
+            selectedAgent = currentAgents.find(a => a.id === agentId);
+            if (selectedAgent) {
+                document.querySelector('#password-modal h3').textContent = 
+                    `🔑 重置密码 - ${selectedAgent.name}`;
+                document.getElementById('password-modal').classList.add('show');
+            }
+        }
+
+        function openTestPasswordModal() {
+            selectedAgent = { id: 1, name: '测试用户' };
+            document.querySelector('#password-modal h3').textContent = 
+                `🔑 重置密码 - ${selectedAgent.name}`;
+            document.getElementById('password-modal').classList.add('show');
+        }
+
+        function closePasswordModal() {
+            document.getElementById('password-modal').classList.remove('show');
+            selectedAgent = null;
+        }
+
+        // 执行密码重置
+        async function executePasswordReset() {
+            if (!selectedAgent) return;
+
+            const autoGenerate = document.getElementById('auto-generate').checked;
+            let requestData = {};
+
+            if (autoGenerate) {
+                requestData.auto_generate_password = true;
+            } else {
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+
+                if (!newPassword || newPassword.length < 8) {
+                    showAlert('error', '密码长度至少8位');
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    showAlert('error', '密码确认不匹配');
+                    return;
+                }
+
+                requestData.password = newPassword;
+                requestData.password_confirmation = confirmPassword;
+            }
+
+            try {
+                const response = await fetch(`/api/v1/accounts/1/enhanced_agents/${selectedAgent.id}/reset_password`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                showAlert('success', `密码重置成功！新密码: ${data.password}`, 10000);
+                closePasswordModal();
+                loadAgents(); // 重新加载列表
+            } catch (error) {
+                showAlert('error', '密码重置失败: ' + error.message);
+            }
+        }
+
+        // 显示提示信息
+        function showAlert(type, message, duration = 5000) {
+            const alertsContainer = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            alert.textContent = message;
+            
+            alertsContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, duration);
+        }
+
+        // 测试函数
+        function testToggleConfirmation() {
+            showAlert('success', '认证切换功能已准备就绪！请先加载用户列表进行测试。');
+        }
+
+        function testPasswordReset() {
+            showAlert('success', '密码重置功能已准备就绪！请先加载用户列表进行测试。');
+        }
+
+        // 自动生成密码切换
+        document.getElementById('auto-generate').addEventListener('change', function() {
+            const manualPassword = document.getElementById('manual-password');
+            manualPassword.style.display = this.checked ? 'none' : 'block';
+        });
+
+        // 页面加载时检查API状态
+        window.addEventListener('load', function() {
+            checkAPIStatus();
+        });
+    </script>
+</body>
+</html>

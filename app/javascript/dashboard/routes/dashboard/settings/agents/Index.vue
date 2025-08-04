@@ -14,6 +14,8 @@ import EditAgent from './EditAgent.vue';
 import BaseSettingsHeader from '../components/BaseSettingsHeader.vue';
 import SettingsLayout from '../SettingsLayout.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
+import Modal from 'dashboard/components/Modal.vue';
+import Input from 'dashboard/components-next/input/Input.vue';
 
 const getters = useStoreGetters();
 const store = useStore();
@@ -133,6 +135,147 @@ const confirmDeletion = () => {
   closeDeletePopup();
   deleteAgent(currentAgent.value.id);
 };
+
+// Enhanced features for user management
+const { showAlert } = useAlert();
+const showPasswordModal = ref(false);
+const selectedAgentForPassword = ref(null);
+const newPassword = ref('');
+const confirmPassword = ref('');
+const autoGeneratePassword = ref(true);
+const enhancedLoading = ref({});
+
+// Enhanced methods
+const showEnhancedActions = (agent) => {
+  return agent.id !== currentUserId.value;
+};
+
+// 切换认证状态
+const toggleConfirmation = async (agent) => {
+  if (enhancedLoading.value[agent.id]) return;
+
+  enhancedLoading.value = { ...enhancedLoading.value, [agent.id]: true };
+
+  try {
+    const response = await fetch(`/api/v1/accounts/${getters.getCurrentAccountId.value}/enhanced_agents/${agent.id}/toggle_confirmation`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Token': getters.getAuthData.value.authToken,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // 更新本地状态
+    store.dispatch('agents/get');
+
+    showAlert({
+      type: 'success',
+      message: data.message || (agent.confirmed ? '认证已撤销' : '用户已认证'),
+    });
+  } catch (error) {
+    console.error('Toggle confirmation error:', error);
+    showAlert({
+      type: 'error',
+      message: '操作失败: ' + error.message,
+    });
+  } finally {
+    enhancedLoading.value = { ...enhancedLoading.value, [agent.id]: false };
+  }
+};
+
+// 打开密码重置模态框
+const openPasswordModal = (agent) => {
+  selectedAgentForPassword.value = agent;
+  newPassword.value = '';
+  confirmPassword.value = '';
+  autoGeneratePassword.value = true;
+  showPasswordModal.value = true;
+};
+
+// 关闭密码重置模态框
+const closePasswordModal = () => {
+  showPasswordModal.value = false;
+  selectedAgentForPassword.value = null;
+  newPassword.value = '';
+  confirmPassword.value = '';
+};
+
+// 重置密码
+const resetPassword = async () => {
+  if (!selectedAgentForPassword.value) return;
+
+  if (!autoGeneratePassword.value) {
+    if (!newPassword.value || newPassword.value.length < 8) {
+      showAlert({
+        type: 'error',
+        message: '密码长度至少8位',
+      });
+      return;
+    }
+
+    if (newPassword.value !== confirmPassword.value) {
+      showAlert({
+        type: 'error',
+        message: '密码确认不匹配',
+      });
+      return;
+    }
+  }
+
+  try {
+    const passwordData = autoGeneratePassword.value
+      ? { auto_generate_password: true }
+      : { password: newPassword.value, password_confirmation: confirmPassword.value };
+
+    const response = await fetch(`/api/v1/accounts/${getters.getCurrentAccountId.value}/enhanced_agents/${selectedAgentForPassword.value.id}/reset_password`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Token': getters.getAuthData.value.authToken,
+      },
+      body: JSON.stringify(passwordData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // 更新本地状态
+    store.dispatch('agents/get');
+
+    showAlert({
+      type: 'success',
+      message: `密码重置成功！新密码: ${data.password}`,
+      duration: 10000,
+    });
+
+    closePasswordModal();
+  } catch (error) {
+    console.error('Reset password error:', error);
+    showAlert({
+      type: 'error',
+      message: '密码重置失败: ' + error.message,
+    });
+  }
+};
+
+// 生成随机密码预览
+const generatePasswordPreview = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let password = '';
+  for (let i = 0; i < 12; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
 </script>
 
 <template>
@@ -234,6 +377,26 @@ const confirmDeletion = () => {
                   @click="openEditPopup(agent)"
                 />
                 <Button
+                  v-if="showEnhancedActions(agent)"
+                  v-tooltip.top="agent.confirmed ? '撤销认证' : '确认认证'"
+                  :icon="agent.confirmed ? 'i-lucide-user-x' : 'i-lucide-user-check'"
+                  xs
+                  :emerald="!agent.confirmed"
+                  :ruby="agent.confirmed"
+                  faded
+                  :is-loading="enhancedLoading[agent.id]"
+                  @click="toggleConfirmation(agent)"
+                />
+                <Button
+                  v-if="showEnhancedActions(agent)"
+                  v-tooltip.top="'重置密码'"
+                  icon="i-lucide-key"
+                  xs
+                  slate
+                  faded
+                  @click="openPasswordModal(agent)"
+                />
+                <Button
                   v-if="showDeleteAction(agent)"
                   v-tooltip.top="$t('AGENT_MGMT.DELETE.BUTTON_TEXT')"
                   icon="i-lucide-trash-2"
@@ -277,5 +440,72 @@ const confirmDeletion = () => {
       :confirm-text="deleteConfirmText"
       :reject-text="deleteRejectText"
     />
+
+    <!-- 密码重置模态框 -->
+    <Modal
+      v-model:show="showPasswordModal"
+      :on-close="closePasswordModal"
+      size="medium"
+    >
+      <div class="p-6">
+        <h3 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">
+          重置密码 - {{ selectedAgentForPassword?.name }}
+        </h3>
+
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <input
+              id="auto-generate"
+              v-model="autoGeneratePassword"
+              type="checkbox"
+              class="rounded border-slate-300 dark:border-slate-600"
+            />
+            <label for="auto-generate" class="text-sm text-slate-700 dark:text-slate-300">
+              自动生成安全密码 (推荐)
+            </label>
+          </div>
+
+          <div v-if="!autoGeneratePassword" class="space-y-3">
+            <Input
+              v-model="newPassword"
+              type="password"
+              label="新密码"
+              placeholder="请输入新密码 (至少8位)"
+              required
+            />
+            <Input
+              v-model="confirmPassword"
+              type="password"
+              label="确认密码"
+              placeholder="请再次输入密码"
+              required
+            />
+          </div>
+
+          <div v-else class="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <p class="text-sm text-slate-700 dark:text-slate-300">
+              将生成一个12位的安全密码，包含大小写字母、数字和特殊字符。
+            </p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              示例: {{ generatePasswordPreview() }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+          <Button
+            variant="clear"
+            @click="closePasswordModal"
+          >
+            取消
+          </Button>
+          <Button
+            @click="resetPassword"
+          >
+            重置密码
+          </Button>
+        </div>
+      </div>
+    </Modal>
   </SettingsLayout>
 </template>
