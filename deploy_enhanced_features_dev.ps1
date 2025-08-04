@@ -8,7 +8,8 @@ Write-Host "1. 停止现有容器..." -ForegroundColor Yellow
 try {
     docker-compose down
     Write-Host "✅ 容器已停止" -ForegroundColor Green
-} catch {
+}
+catch {
     Write-Host "⚠️ 停止容器时出现警告: $($_.Exception.Message)" -ForegroundColor Yellow
 }
 
@@ -18,7 +19,8 @@ Write-Host "2. 清理Docker缓存..." -ForegroundColor Yellow
 try {
     docker system prune -f
     Write-Host "✅ Docker缓存已清理" -ForegroundColor Green
-} catch {
+}
+catch {
     Write-Host "⚠️ 清理缓存时出现警告: $($_.Exception.Message)" -ForegroundColor Yellow
 }
 
@@ -28,7 +30,8 @@ Write-Host "3. 重新构建并启动容器..." -ForegroundColor Yellow
 try {
     docker-compose up -d --build
     Write-Host "✅ 容器已重新构建并启动" -ForegroundColor Green
-} catch {
+}
+catch {
     Write-Host "❌ 启动容器失败: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
@@ -45,7 +48,8 @@ try {
     $containers = docker-compose ps
     Write-Host $containers
     Write-Host "✅ 容器状态检查完成" -ForegroundColor Green
-} catch {
+}
+catch {
     Write-Host "⚠️ 检查容器状态时出现警告: $($_.Exception.Message)" -ForegroundColor Yellow
 }
 
@@ -55,7 +59,8 @@ Write-Host "6. 运行数据库迁移..." -ForegroundColor Yellow
 try {
     docker-compose exec chatwoot bundle exec rails db:migrate
     Write-Host "✅ 数据库迁移完成" -ForegroundColor Green
-} catch {
+}
+catch {
     Write-Host "⚠️ 数据库迁移时出现警告: $($_.Exception.Message)" -ForegroundColor Yellow
 }
 
@@ -65,7 +70,8 @@ Write-Host "7. 重启Rails服务器..." -ForegroundColor Yellow
 try {
     docker-compose restart chatwoot
     Write-Host "✅ Rails服务器已重启" -ForegroundColor Green
-} catch {
+}
+catch {
     Write-Host "⚠️ 重启服务器时出现警告: $($_.Exception.Message)" -ForegroundColor Yellow
 }
 
@@ -83,7 +89,8 @@ try {
     Write-Host "   状态: $($response.status)" -ForegroundColor Cyan
     Write-Host "   消息: $($response.message)" -ForegroundColor Cyan
     Write-Host "   用户数量: $($response.user_count)" -ForegroundColor Cyan
-} catch {
+}
+catch {
     Write-Host "⚠️ API端点测试失败: $($_.Exception.Message)" -ForegroundColor Yellow
     Write-Host "   这可能是正常的，如果服务还在启动中" -ForegroundColor Gray
 }
@@ -124,7 +131,8 @@ if ($openBrowser -eq "y" -or $openBrowser -eq "Y") {
     try {
         Start-Process "http://localhost:3000/enhanced_agents_test.html"
         Write-Host "✅ 浏览器已打开测试页面" -ForegroundColor Green
-    } catch {
+    }
+    catch {
         Write-Host "⚠️ 无法自动打开浏览器，请手动访问: http://localhost:3000/enhanced_agents_test.html" -ForegroundColor Yellow
     }
 }
