@@ -22,6 +22,13 @@ services:
     ports:
       - '6379:6379'
 
+  mailhog:
+    image: mailhog/mailhog
+    restart: always
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+
   chatwoot:
     image: chatwoot/chatwoot:v3.12.0
     restart: always
@@ -31,7 +38,14 @@ services:
     ports:
       - '3000:3000'
     volumes:
+      # 挂载自定义代码文件
+      - ./app/controllers/api/v1/accounts/enhanced_agents_controller.rb:/app/app/controllers/api/v1/accounts/enhanced_agents_controller.rb
+      - ./app/controllers/health_controller.rb:/app/app/controllers/health_controller.rb
+      - ./app/javascript/dashboard/routes/dashboard/settings/agents/Index.vue:/app/app/javascript/dashboard/routes/dashboard/settings/agents/Index.vue
+      - ./config/routes.rb:/app/config/routes.rb
+      - ./public/enhanced_agents_test.html:/app/public/enhanced_agents_test.html
       - ./public:/app/public
+      - storage_data:/app/storage
     environment:
       - RAILS_ENV=production
       - SECRET_KEY_BASE=0D5BFDBCF455A014C7FDB1EF4AC48E0EEED7D47BC95E1491B26D37AE26597A04983A96AD9792CCB40C7BBD5E16468F2B7ADE12160D3D489F04E5310B76CE7384
@@ -43,7 +57,44 @@ services:
       - REDIS_URL=redis://:chatwoot_redis_password@redis:6379
       - ENABLE_ACCOUNT_SIGNUP=true
       - RAILS_LOG_TO_STDOUT=true
+      # 启用所有功能
+      - ENABLE_FEATURE_MACROS=true
+      - ENABLE_FEATURE_LABELS=true
+      - ENABLE_FEATURE_INBOX_GREETING=true
+      - ENABLE_FEATURE_TEAM_MANAGEMENT=true
+      - ENABLE_FEATURE_AUTO_RESOLVE_CONVERSATIONS=true
+      - ENABLE_FEATURE_CAMPAIGNS=true
+      - ENABLE_FEATURE_INTEGRATIONS=true
+      - ENABLE_FEATURE_REPORTS=true
+      - ENABLE_FEATURE_AGENT_BOTS=true
+      - ENABLE_FEATURE_HELP_CENTER=true
+      - ENABLE_FEATURE_VOICE_RECORDER=true
+      - ENABLE_FEATURE_EMOJI_PICKER=true
+      - ENABLE_FEATURE_ATTACHMENT_PROCESSOR=true
+      - ENABLE_FEATURE_ENHANCED_AGENTS=true
+      - ENABLE_FEATURE_CUSTOM_ATTRIBUTES=true
+      - ENABLE_FEATURE_WEBHOOKS=true
+      - ENABLE_FEATURE_SLACK_INTEGRATION=true
+      - ENABLE_FEATURE_FACEBOOK_INTEGRATION=true
+      - ENABLE_FEATURE_TWITTER_INTEGRATION=true
+      - ENABLE_FEATURE_WHATSAPP_INTEGRATION=true
+      - ENABLE_FEATURE_SMS_INTEGRATION=true
+      - ENABLE_FEATURE_EMAIL_INTEGRATION=true
+      - ENABLE_FEATURE_WEBSITE_INTEGRATION=true
+      - ENABLE_FEATURE_API_INTEGRATION=true
+      # 邮件配置
+      - SMTP_DOMAIN=localhost
+      - SMTP_ADDRESS=mailhog
+      - SMTP_PORT=1025
+      - SMTP_USERNAME=
+      - SMTP_PASSWORD=
+      - SMTP_AUTHENTICATION=
+      - SMTP_ENABLE_STARTTLS_AUTO=false
+      - SMTP_OPENSSL_VERIFY_MODE=none
+      - ACTIVE_STORAGE_SERVICE=local
+      - LOG_LEVEL=info
 
 volumes:
   postgres_data:
   redis_data:
+  storage_data:

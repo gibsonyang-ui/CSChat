@@ -20,8 +20,15 @@ services:
     volumes:
       - redis_data:/data
 
+  mailhog:
+    image: mailhog/mailhog
+    restart: always
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+
   rails:
-    image: chatwoot/chatwoot:latest
+    image: chatwoot/chatwoot:v3.12.0
     restart: always
     depends_on:
       - postgres
@@ -42,8 +49,49 @@ services:
       - ENABLE_ACCOUNT_SIGNUP=true
       - MAILER_SENDER_EMAIL=Chatwoot <noreply@localhost>
       - RAILS_LOG_LEVEL=debug
-    command: ['sh', '-c', 'bundle exec rails db:create || true && bundle exec rails db:schema:load || true && bundle exec rails s -p 3000 -b 0.0.0.0']
+      # 启用所有功能
+      - ENABLE_FEATURE_MACROS=true
+      - ENABLE_FEATURE_LABELS=true
+      - ENABLE_FEATURE_INBOX_GREETING=true
+      - ENABLE_FEATURE_TEAM_MANAGEMENT=true
+      - ENABLE_FEATURE_AUTO_RESOLVE_CONVERSATIONS=true
+      - ENABLE_FEATURE_CAMPAIGNS=true
+      - ENABLE_FEATURE_INTEGRATIONS=true
+      - ENABLE_FEATURE_REPORTS=true
+      - ENABLE_FEATURE_AGENT_BOTS=true
+      - ENABLE_FEATURE_HELP_CENTER=true
+      - ENABLE_FEATURE_VOICE_RECORDER=true
+      - ENABLE_FEATURE_EMOJI_PICKER=true
+      - ENABLE_FEATURE_ATTACHMENT_PROCESSOR=true
+      - ENABLE_FEATURE_ENHANCED_AGENTS=true
+      - ENABLE_FEATURE_CUSTOM_ATTRIBUTES=true
+      - ENABLE_FEATURE_WEBHOOKS=true
+      - ENABLE_FEATURE_SLACK_INTEGRATION=true
+      - ENABLE_FEATURE_FACEBOOK_INTEGRATION=true
+      - ENABLE_FEATURE_TWITTER_INTEGRATION=true
+      - ENABLE_FEATURE_WHATSAPP_INTEGRATION=true
+      - ENABLE_FEATURE_SMS_INTEGRATION=true
+      - ENABLE_FEATURE_EMAIL_INTEGRATION=true
+      - ENABLE_FEATURE_WEBSITE_INTEGRATION=true
+      - ENABLE_FEATURE_API_INTEGRATION=true
+      # 邮件配置
+      - SMTP_DOMAIN=localhost
+      - SMTP_ADDRESS=mailhog
+      - SMTP_PORT=1025
+      - SMTP_USERNAME=
+      - SMTP_PASSWORD=
+      - SMTP_AUTHENTICATION=
+      - SMTP_ENABLE_STARTTLS_AUTO=false
+      - SMTP_OPENSSL_VERIFY_MODE=none
+      # 存储配置
+      - ACTIVE_STORAGE_SERVICE=local
+    command: ['sh', '-c', 'bundle exec rails db:create || true && bundle exec rails db:migrate || true && bundle exec rails assets:precompile || true && bundle exec rails s -p 3000 -b 0.0.0.0']
     volumes:
+      # 挂载自定义代码 - 开发者环境
+      - ./app/controllers:/app/app/controllers
+      - ./app/javascript:/app/app/javascript
+      - ./config:/app/config
+      - ./public:/app/public
       - storage_data:/app/storage
 
 volumes:
